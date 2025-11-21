@@ -1,47 +1,35 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"playground/internal/handler"
+
+	"github.com/go-chi/chi"
 )
 
 type Server struct {
-	mux *http.ServeMux
+	router chi.Router
 }
 
 func NewServer() *Server {
 	return &Server{
-		mux: http.NewServeMux(),
+		router: chi.NewRouter(),
 	}
 }
 
-
-func (s *Server) RegisterRouters(userhandler *handler.UserHandler) {
-	s.mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
-		fmt.Fprint(w, "API is running")
+func (s *Server) RegisterRouters(userHandler *handler.UserHandler) {
+	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("API is running"))
 	})
 
-	s.mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request){
-		if r.Method == http.MethodGet {
-			userhandler.GetUsers(w, r)		
-			return
-		}
-	
-		if r.Method == http.MethodPost {
-			userhandler.CreateUser(w, r)
-			return
-		}
-
-		if r.Method == http.MethodGet{
-			userhandler.GetUserById(w, r)
-			return
-		}
-	
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	s.router.Route("/users", func(r chi.Router) {
+		r.Get("/", userHandler.GetUsers)
+		r.Post("/", userHandler.CreateUser)
+		r.Get("/{id}", userHandler.GetUserById)
+		r.Put("/{id}", userHandler.UpdateUser)
 	})
 }
 
 func (s *Server) Run(addr string) error {
-	return http.ListenAndServe(addr, s.mux)
+	return http.ListenAndServe(addr, s.router)
 }

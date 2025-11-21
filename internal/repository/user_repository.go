@@ -1,6 +1,9 @@
 package repository
 
-import "playground/internal/model"
+import (
+	"fmt"
+	"playground/internal/model"
+)
 
 type UserRepository struct {
 	users []model.User
@@ -38,3 +41,12 @@ func (r *UserRepository) FindByID(id int) *model.User{
 	return nil
 }
 
+func (r *UserRepository) Update(id int, name string) (*model.User, error){
+	for i, u := range r.users{
+		if u.ID == id {
+			r.users[i].Name = name
+			return &r.users[i], nil
+		}
+	}
+	return nil, fmt.Errorf("User not found")
+}

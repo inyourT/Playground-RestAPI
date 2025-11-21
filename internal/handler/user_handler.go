@@ -78,3 +78,32 @@ func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
+
+func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Invalid HTTP Method", http.StatusBadRequest)
+		return
+	}
+
+	// ambil id dari url
+	parts := strings.Split(r.URL.Path, "/")
+	id,_ := strconv.Atoi(parts[2])
+
+	// decode json
+	var req CreateUserRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+
+	updatedUser, err := h.service.UpdateUser(id, req.Name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updatedUser)
+}

@@ -32,3 +32,10 @@ func(s *UserService) GetUserById(id int) (*model.User, error) {
 	}
 	return user, nil
 }
+
+func (s *UserService) UpdateUser(id int, name string) (*model.User, error) {
+	if name == "" {
+		return nil, fmt.Errorf("Name cannot be empty")
+	}
+	return s.repo.Update(id, name)
+}	
